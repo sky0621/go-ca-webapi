@@ -1,15 +1,19 @@
 package application
 
-import "go-ca-webapi/02_cleanarchitecture/adapter"
-
-func NewApp() *App {
-	return &App{}
+func NewApp(env Env, webServer WebServer) *App {
+	return &App{
+		env:       env,
+		webServer: webServer,
+	}
 }
 
 type App struct {
+	env       Env
+	webServer WebServer
 }
 
-func (a *App) Start() {
+func (a *App) Start() error {
+	// FIXME: DIは、ここで。
 
-	adapter.NewWebServer()
+	return a.webServer.Start()
 }

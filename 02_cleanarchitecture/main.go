@@ -1,7 +1,9 @@
 package main
 
 import (
+	"go-ca-webapi/02_cleanarchitecture/adapter"
 	"go-ca-webapi/02_cleanarchitecture/application"
+	"log"
 )
 
 func init() {
@@ -12,5 +14,9 @@ func init() {
 func main() {
 	// TODO: Panic捕捉ロジック実装！
 
-	application.NewApp().Start()
+	env := application.NewEnv()
+	err := application.NewApp(env, adapter.NewWebServer(env)).Start()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
