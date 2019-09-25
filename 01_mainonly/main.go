@@ -1,26 +1,18 @@
 package main
 
 import (
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo"
 	"log"
 	"net/http"
-	"os"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 // 注意: プロダクション品質ではありません。
 func main() {
 	/*
-	 * セットアップ
+	 * DBコネクション取得等の初期セットアップ
 	 */
-	adminKey := os.Getenv("GO_CA_WEBAPI_ADMIN_KEY")
-	if adminKey == "" {
-		log.Fatal("env GO_CA_WEBAPI_ADMIN_KEY doesn't exist")
-	}
-
-	// RDB(MySQL)コネクション取得
 	db, err := gorm.Open("mysql", "localuser:localpass@tcp(localhost:3306)/localdb?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		log.Fatal(err)
@@ -33,19 +25,14 @@ func main() {
 		}
 	}()
 
-	// Webサーバセットアップ
+	/*
+	 * Web-APIサーバの起動とルーティング設定
+	 */
 	e := echo.New()
 
-	/*
-	 * WebAPIルーティング設定
-	 */
 	// 「商品」を登録
 	e.POST("/item", func(c echo.Context) error {
 		i := &item{}
-		// 本来用途と違うが「管理者のみ商品登録可能」の要件を満たすために暫定実装
-		if c.Request().Header.Get("WWW-Authenticate") != adminKey {
-			return sendResponse(c, http.StatusUnauthorized)
-		}
 		if err := c.Bind(i); err != nil {
 			return sendResponse(c, http.StatusBadRequest)
 		}
@@ -61,7 +48,7 @@ func main() {
 		var res []*item
 		if err := db.Find(&res).Error; err != nil {
 			log.Println(err)
-			return err
+			return sendResponse(c, http.StatusInternalServerError)
 		}
 		return c.JSON(http.StatusOK, res)
 	})

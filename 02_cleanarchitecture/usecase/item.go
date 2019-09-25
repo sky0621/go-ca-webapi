@@ -1,14 +1,24 @@
 package usecase
 
 import (
+	"go-ca-webapi/02_cleanarchitecture/entity"
 	"go-ca-webapi/02_cleanarchitecture/usecase/inputport"
-	"go-ca-webapi/02_cleanarchitecture/usecase/outputport"
 )
 
-type Item interface {
-	// 新規ユーザを追加するユースケース
-	AddItem(in inputport.Item) error
+func NewItem(entity *entity.Item) inputport.ItemInputPort {
+	return &item{entity: entity}
+}
 
-	// 既存ユーザの一覧を取得するユースケース
-	ListItem() ([]outputport.Item, error)
+type item struct {
+	entity *entity.Item
+}
+
+func (i *item) SaveItem(r *inputport.SaveItemRequest) error {
+
+	return nil
+}
+
+func (i *item) ListItem() error {
+
+	return nil
 }
