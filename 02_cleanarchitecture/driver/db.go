@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"log"
 
@@ -11,11 +12,12 @@ import (
 type closeDBConnectionFunc func()
 
 // RDB(MySQL)コネクション取得
-func NewDBConnection() (*gorm.DB, closeDBConnectionFunc, error) {
-	db, err := gorm.Open("mysql", "localuser:localpass@tcp(localhost:3306)/localdb?charset=utf8&parseTime=True&loc=Local")
-	return db, func() {
-		if db != nil {
-			if err := db.Close(); err != nil {
+func NewDBConnection(user, pass, host, db string) (*gorm.DB, closeDBConnectionFunc, error) {
+	connStr := "%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local"
+	dbConn, err := gorm.Open("mysql", fmt.Sprintf(connStr, user, pass, host, db))
+	return dbConn, func() {
+		if dbConn != nil {
+			if err := dbConn.Close(); err != nil {
 				log.Fatal(err)
 			}
 		}

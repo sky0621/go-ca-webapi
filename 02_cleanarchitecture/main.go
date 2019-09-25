@@ -6,6 +6,7 @@ import (
 	"go-ca-webapi/02_cleanarchitecture/adapter/controller"
 	"go-ca-webapi/02_cleanarchitecture/driver"
 	"log"
+	"os"
 )
 
 // 注意: プロダクション品質ではありません。
@@ -13,7 +14,11 @@ func main() {
 	/*
 	 * DBコネクション取得等の初期セットアップ
 	 */
-	db, closeFunc, err := driver.NewDBConnection()
+	dbConn, closeFunc, err := driver.NewDBConnection(
+		os.Getenv("PRJ_GROWUP_USERNAME"),
+		os.Getenv("PRJ_GROWUP_PASSWORD"),
+		os.Getenv("PRJ_GROWUP_INSTANCE"),
+		os.Getenv("PRJ_GROWUP_DBNAME"))
 	if err != nil {
 		log.Fatal(err)
 	}
