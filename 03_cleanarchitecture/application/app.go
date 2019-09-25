@@ -13,7 +13,6 @@ type App struct {
 }
 
 func (a *App) Start() error {
-	// FIXME: DIは、ここで。
 
 	return a.webServer.Start()
 }

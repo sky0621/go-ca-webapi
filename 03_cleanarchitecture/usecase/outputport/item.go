@@ -1,4 +1,4 @@
-package inputport
+package outputport
 
 type Item interface {
 
