@@ -4,7 +4,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
 	"go-ca-webapi/02_cleanarchitecture/adapter/controller"
+	"go-ca-webapi/02_cleanarchitecture/adapter/gateway"
 	"go-ca-webapi/02_cleanarchitecture/driver"
+	"go-ca-webapi/02_cleanarchitecture/entity"
+	"go-ca-webapi/02_cleanarchitecture/usecase"
 	"log"
 	"os"
 )
@@ -24,24 +27,26 @@ func main() {
 	}
 	defer closeFunc()
 
+	// MEMO: カスタムロガー、クラウドサービス接続クライアント、その他外部APIクライアント等の生成もここで。
+
 	/*
 	 * Web-APIサーバの起動とルーティング設定
 	 */
 	e := echo.New()
 
+	/*
+	 * DI（後ほど、google/wire にて取りまとめる
+	 */
+	itemRepository := gateway.NewItem(dbConn)
+	itemEntity := entity.NewItem(itemRepository)
+	itemUsecase := usecase.NewItem(itemEntity)
+	itemController := controller.NewItem(e, itemUsecase)
+
+	// FIXME:
+	//itemPresenter := presenter.NewItem()
+
 	// 「/item」へのCRUDをルーティング
-	controller.NewItem().Handle(e)
+	itemController.Handle()
 
 	e.Logger.Fatal(e.Start(":8080"))
-}
-
-// 「商品」を定義
-type item struct {
-	ID    string `json:"id" gorm:"column:id;primary_key"` // 商品ID
-	Name  string `json:"name" gorm:"column:name"`         // 商品名
-	Price int    `json:"price" gorm:"column:price"`       // 金額
-}
-
-func (i *item) TableName() string {
-	return "item"
 }

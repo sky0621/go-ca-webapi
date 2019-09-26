@@ -11,6 +11,7 @@ func NewItem(itemRepository repository.Item) Item {
 
 type Item interface {
 	SaveItem(m *model.Item) error
+	ListItem() ([]*model.Item, error)
 }
 
 type item struct {
@@ -19,4 +20,8 @@ type item struct {
 
 func (i *item) SaveItem(m *model.Item) error {
 	return i.itemRepository.SaveItem(m)
+}
+
+func (i *item) ListItem() ([]*model.Item, error) {
+	return i.itemRepository.ListItem()
 }

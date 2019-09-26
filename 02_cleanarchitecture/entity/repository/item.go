@@ -6,4 +6,5 @@ import (
 
 type Item interface {
 	SaveItem(m *model.Item) error
+	ListItem() ([]*model.Item, error)
 }

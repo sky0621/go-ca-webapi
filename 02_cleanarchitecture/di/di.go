@@ -4,4 +4,6 @@ package di
 
 //var WSet = wire.NewSet()
 
-func Initialize
+func Initialize() {
+	// FIXME:
+}

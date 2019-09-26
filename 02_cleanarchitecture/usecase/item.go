@@ -11,21 +11,21 @@ func NewItem(itemEntity entity.Item) Item {
 
 // adapter/controller層から呼ばれるインプットポート
 type Item interface {
-	SaveItem(r *SaveItemRequest) error
-	ListItem() error
+	SaveItem(r *SaveItemRequest)
+	ListItem()
 }
 
 type item struct {
 	itemEntity entity.Item
 }
 
-func (i *item) SaveItem(r *SaveItemRequest) error {
-	return i.itemEntity.SaveItem(r.convert())
+func (i *item) SaveItem(r *SaveItemRequest) {
+	err := i.itemEntity.SaveItem(convertFrom(r))
+	// FIXME: output-portの呼び出し！
 }
 
-func (i *item) ListItem() error {
-
-	return nil
+func (i *item) ListItem() {
+	// FIXME:
 }
 
 type SaveItemRequest struct {
@@ -34,7 +34,7 @@ type SaveItemRequest struct {
 	Price int    // 金額
 }
 
-func (r *SaveItemRequest) convert() *model.Item {
+func convertFrom(r *SaveItemRequest) *model.Item {
 	return &model.Item{
 		ID:    r.ID,
 		Name:  r.Name,
