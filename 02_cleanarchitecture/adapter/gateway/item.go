@@ -3,8 +3,8 @@ package gateway
 import (
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	"go-ca-webapi/02_cleanarchitecture/entity/model"
-	"go-ca-webapi/02_cleanarchitecture/entity/repository"
+	"go-ca-webapi/02_cleanarchitecture/domain/model"
+	"go-ca-webapi/02_cleanarchitecture/domain/repository"
 )
 
 func NewItem(dbConn *gorm.DB) repository.Item {
@@ -29,7 +29,7 @@ func (i *itemRepository) ListItem() ([]*model.Item, error) {
 		return nil, errors.Wrap(err, "@repository.itemRepository#SaveItem()")
 	}
 
-	results := []*model.Item{}
+	var results []*model.Item
 	for _, item := range items {
 		results = append(results, item.convertToModel())
 	}
@@ -44,7 +44,7 @@ type itemRecord struct {
 
 // O/RマッパーにGormを使う上で必要となる「テーブル名」のマッピング
 func (i *itemRecord) TableName() string {
-	return "itemRecord"
+	return "item"
 }
 
 func (i *itemRecord) convertToModel() *model.Item {

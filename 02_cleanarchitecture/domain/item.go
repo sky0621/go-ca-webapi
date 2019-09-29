@@ -1,8 +1,8 @@
-package entity
+package domain
 
 import (
-	"go-ca-webapi/02_cleanarchitecture/entity/model"
-	"go-ca-webapi/02_cleanarchitecture/entity/repository"
+	"go-ca-webapi/02_cleanarchitecture/domain/model"
+	"go-ca-webapi/02_cleanarchitecture/domain/repository"
 )
 
 func NewItem(itemRepository repository.Item) Item {

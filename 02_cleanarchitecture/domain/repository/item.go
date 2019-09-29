@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"go-ca-webapi/02_cleanarchitecture/entity/model"
+	"go-ca-webapi/02_cleanarchitecture/domain/model"
 )
 
 type Item interface {

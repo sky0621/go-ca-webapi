@@ -2,19 +2,22 @@ package controller
 
 import (
 	"github.com/labstack/echo"
+	"go-ca-webapi/02_cleanarchitecture/adapter/presenter"
 	"go-ca-webapi/02_cleanarchitecture/usecase"
 	"net/http"
 )
 
 func NewItem(e *echo.Echo, input usecase.Item) Item {
-	return &itemController{
+	c := &itemController{
 		e:     e,
 		input: input,
 	}
+	c.handle()
+	return c
 }
 
 type Item interface {
-	Handle()
+	handle()
 }
 
 type itemController struct {
@@ -22,7 +25,7 @@ type itemController struct {
 	input usecase.Item
 }
 
-func (i *itemController) Handle() {
+func (i *itemController) handle() {
 	i.e.POST("/item", i.saveItem)
 	i.e.GET("/item", i.listItem)
 }
@@ -34,16 +37,12 @@ func (i *itemController) saveItem(c echo.Context) error {
 		return sendResponse(c, http.StatusBadRequest)
 	}
 
-	// adapter層(controller)はusecase層を呼ぶだけ（レスポンスはusecase層が(output-portを実装した)adapter層(controller)を呼ぶことで実現）
-	i.input.SaveItem(convertFrom(r))
-	return nil
+	return i.input.SaveItem(convertFrom(r), presenter.NewItem(c))
 }
 
 // 「商品」一覧を返却
 func (i *itemController) listItem(c echo.Context) error {
-	// adapter層(controller)はusecase層を呼ぶだけ（レスポンスはusecase層が(output-portを実装した)adapter層(controller)を呼ぶことで実現）
-	i.input.ListItem()
-	return nil
+	return i.input.ListItem(presenter.NewItem(c))
 }
 
 func sendResponse(c echo.Context, code int) error {
@@ -54,7 +53,6 @@ func sendResponse(c echo.Context, code int) error {
 
 // JSON形式のHTTPリクエストBodyパース用
 type saveItemRequest struct {
-	ID    string `json:"id"`    // 商品ID
 	Name  string `json:"name"`  // 商品名
 	Price int    `json:"price"` // 金額
 }
@@ -62,7 +60,7 @@ type saveItemRequest struct {
 // HTTPリクエストをusecase層に渡すための変換
 func convertFrom(r *saveItemRequest) *usecase.SaveItemRequest {
 	return &usecase.SaveItemRequest{
-		ID:    r.ID,
+		ID:    generateID(),
 		Name:  r.Name,
 		Price: r.Price,
 	}

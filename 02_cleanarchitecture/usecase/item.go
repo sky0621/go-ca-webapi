@@ -1,31 +1,39 @@
 package usecase
 
 import (
-	"go-ca-webapi/02_cleanarchitecture/entity"
-	"go-ca-webapi/02_cleanarchitecture/entity/model"
+	"go-ca-webapi/02_cleanarchitecture/domain"
+	"go-ca-webapi/02_cleanarchitecture/domain/model"
+	usecasemodel "go-ca-webapi/02_cleanarchitecture/usecase/model"
+	"go-ca-webapi/02_cleanarchitecture/usecase/outputport"
 )
 
-func NewItem(itemEntity entity.Item) Item {
-	return &item{itemEntity: itemEntity}
+func NewItem(itemDomain domain.Item) Item {
+	return &item{itemDomain: itemDomain}
 }
 
 // adapter/controller層から呼ばれるインプットポート
 type Item interface {
-	SaveItem(r *SaveItemRequest)
-	ListItem()
+	SaveItem(r *SaveItemRequest, o outputport.ItemOutputPort) error
+	ListItem(o outputport.ItemOutputPort) error
 }
 
 type item struct {
-	itemEntity entity.Item
+	itemDomain domain.Item
 }
 
-func (i *item) SaveItem(r *SaveItemRequest) {
-	err := i.itemEntity.SaveItem(convertFrom(r))
-	// FIXME: output-portの呼び出し！
+func (i *item) SaveItem(r *SaveItemRequest, o outputport.ItemOutputPort) error {
+	err := i.itemDomain.SaveItem(convertFrom(r))
+	if err == nil {
+		return o.RenderSaveResult(&usecasemodel.SaveItem{ID: r.ID})
+	} else {
+		return o.RenderFailure(err)
+	}
 }
 
-func (i *item) ListItem() {
+func (i *item) ListItem(o outputport.ItemOutputPort) error {
 	// FIXME:
+	//results, err := i.itemDomain.ListItem()
+	return nil
 }
 
 type SaveItemRequest struct {
