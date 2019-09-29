@@ -8,22 +8,22 @@ import (
 )
 
 func NewItem(dbConn *gorm.DB) repository.Item {
-	return &itemRepository{dbConn: dbConn}
+	return &ItemRepository{dbConn: dbConn}
 }
 
 // entity.repository層の実装
-type itemRepository struct {
+type ItemRepository struct {
 	dbConn *gorm.DB
 }
 
-func (i *itemRepository) SaveItem(m *model.Item) error {
+func (i *ItemRepository) SaveItem(m *model.Item) error {
 	if err := i.dbConn.Create(convertFrom(m)).Error; err != nil {
 		return errors.Wrap(err, "@repository.itemRepository#SaveItem()")
 	}
 	return nil
 }
 
-func (i *itemRepository) ListItem() ([]*model.Item, error) {
+func (i *ItemRepository) ListItem() ([]*model.Item, error) {
 	var items []*itemRecord
 	if err := i.dbConn.Find(&items).Error; err != nil {
 		return nil, errors.Wrap(err, "@repository.itemRepository#SaveItem()")

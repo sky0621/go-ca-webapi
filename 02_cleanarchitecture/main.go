@@ -3,7 +3,9 @@ package main
 import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
-	"go-ca-webapi/02_cleanarchitecture/di"
+	"go-ca-webapi/02_cleanarchitecture/adapter/controller"
+	"go-ca-webapi/02_cleanarchitecture/usecase"
+
 	"go-ca-webapi/02_cleanarchitecture/driver"
 	"log"
 	"os"
@@ -24,19 +26,29 @@ func main() {
 	}
 	defer closeFunc()
 
-	/*
-	 * Web-APIサーバの起動とルーティング設定
-	 */
-	e := echo.New()
+	app := Initialize(dbConn, echo.New())
+	app.Start()
+}
 
-	/*
-	 * DI（後ほど、google/wire にて取りまとめる
-	 */
-	//itemRepository := gateway.NewItem(dbConn)
-	//itemEntity := domain.NewItem(itemRepository)
-	//itemUsecase := usecase.NewItem(itemEntity)
-	//itemController := controller.NewItem(e, itemUsecase)
-	di.Initialize(e, dbConn)
+func NewApp(
+	e *echo.Echo,
+	itemUsecase usecase.Item,
+	itemController controller.Item,
+) App {
+	return App{
+		e:              e,
+		itemUsecase:    itemUsecase,
+		itemController: itemController,
+	}
+}
 
-	e.Logger.Fatal(e.Start(":8080"))
+type App struct {
+	e              *echo.Echo
+	itemUsecase    usecase.Item
+	itemController controller.Item
+}
+
+func (a App) Start() {
+	a.itemController.Handle()
+	a.e.Logger.Fatal(a.e.Start(":8080"))
 }

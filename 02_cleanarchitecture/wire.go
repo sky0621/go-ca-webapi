@@ -1,8 +1,9 @@
 //+build wireinject
 
-package di
+package main
 
 import (
+	"context"
 	"github.com/google/wire"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo"
@@ -12,18 +13,15 @@ import (
 	"go-ca-webapi/02_cleanarchitecture/usecase"
 )
 
-func Initialize(e *echo.Echo, dbConn *gorm.DB) string {
-	//wire.Build(usecase.NewItem)
-	//wire.Build(domain.NewItem)
-	//wire.Build(
-	//	controller.NewItem,
-	//	gateway.NewItem(dbConn),
-	//)
+var superSet = wire.NewSet(
+	gateway.NewItem,
+	controller.NewItem,
+	domain.NewItem,
+	usecase.NewItem,
+	NewApp,
+)
 
-	return wire.Build(
-		usecase.NewItem,
-		domain.NewItem,
-		controller.NewItem,
-		gateway.NewItem,
-	)
+func Initialize(ctx context.Context, dbConn *gorm.DB, e *echo.Echo) App {
+	wire.Build(superSet)
+	return App{}
 }

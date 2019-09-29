@@ -4,20 +4,17 @@ import (
 	"github.com/labstack/echo"
 	"go-ca-webapi/02_cleanarchitecture/adapter/presenter"
 	"go-ca-webapi/02_cleanarchitecture/usecase"
-	"net/http"
 )
 
 func NewItem(e *echo.Echo, input usecase.Item) Item {
-	c := &itemController{
+	return &itemController{
 		e:     e,
 		input: input,
 	}
-	c.handle()
-	return c
 }
 
 type Item interface {
-	handle()
+	Handle()
 }
 
 type itemController struct {
@@ -25,30 +22,25 @@ type itemController struct {
 	input usecase.Item
 }
 
-func (i *itemController) handle() {
+func (i *itemController) Handle() {
 	i.e.POST("/item", i.saveItem)
 	i.e.GET("/item", i.listItem)
 }
 
 // 「商品」を登録
 func (i *itemController) saveItem(c echo.Context) error {
+	o := presenter.NewItem(c)
 	r := &saveItemRequest{}
 	if err := c.Bind(r); err != nil {
-		return sendResponse(c, http.StatusBadRequest)
+		return o.RenderFailure(err)
 	}
 
-	return i.input.SaveItem(convertFrom(r), presenter.NewItem(c))
+	return i.input.SaveItem(convertFrom(r), o)
 }
 
 // 「商品」一覧を返却
 func (i *itemController) listItem(c echo.Context) error {
 	return i.input.ListItem(presenter.NewItem(c))
-}
-
-func sendResponse(c echo.Context, code int) error {
-	return c.JSON(code, struct {
-		Message string `json:"message"`
-	}{Message: http.StatusText(code)})
 }
 
 // JSON形式のHTTPリクエストBodyパース用

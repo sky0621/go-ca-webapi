@@ -31,8 +31,20 @@ func (i *item) SaveItem(r *SaveItemRequest, o outputport.ItemOutputPort) error {
 }
 
 func (i *item) ListItem(o outputport.ItemOutputPort) error {
-	// FIXME:
-	//results, err := i.itemDomain.ListItem()
+	itemModels, err := i.itemDomain.ListItem()
+	if err == nil {
+		var itemUsecaseModels []*usecasemodel.ListItem
+		for _, itemModel := range itemModels {
+			itemUsecaseModels = append(itemUsecaseModels, &usecasemodel.ListItem{
+				ID:    itemModel.ID,
+				Name:  itemModel.Name,
+				Price: itemModel.Price,
+			})
+		}
+		return o.RenderListResult(itemUsecaseModels)
+	} else {
+		return o.RenderFailure(err)
+	}
 	return nil
 }
 
