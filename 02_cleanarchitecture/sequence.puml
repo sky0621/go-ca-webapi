@@ -1,0 +1,46 @@
+@startuml ca-sequence
+autonumber
+
+actor Alice
+box "Frameworks & Drivers" #LightBlue
+  boundary "echo/Echo" <<(S,#FFCC00) "POST /item" >>
+end box
+box "Interface Adapters" #LightGreen
+  control "controller/item" <<(S,#FFCC00) >>
+end box
+box "Application Business Rules" #LightPink
+  entity "usecase.Item" << (I,Silver) >>
+  entity "usecase.item" << (S,#FFCC00) >>
+  entity "outputport.ItemOutputPort" << (I,Silver) >>
+end box
+box "Enterprise Business Rules" #LightYellow
+  entity "domain.Item" << (I,Silver) >>
+  entity "domain.item" << (S,#FFCC00) >>
+  entity "repository.Item" << (I,Silver) >>
+end box
+box "Interface Adapters" #LightGreen
+  control "gateway/item" <<(S,#FFCC00) >>
+  control "presenter/itemPresenter" <<(S,#FFCC00) >>
+end box
+box "Frameworks & Drivers" #LightBlue
+  boundary "gorm/DB" <<(S,#FFCC00) >>
+  boundary "echo/Context" <<(I,Silver) >>
+end box
+database item
+
+Alice -> "echo/Echo": Request
+"echo/Echo" -> "controller/item": saveItem()
+"controller/item" -> "usecase.Item": SaveItem()
+"usecase.Item" -> "usecase.item": SaveItem()
+"usecase.item" -> "domain.Item": SaveItem()
+"domain.Item" -> "domain.item": SaveItem()
+"domain.item" -> "repository.Item": SaveItem()
+"repository.Item" -> "gateway/item": SaveItem()
+"gateway/item" -> "gorm/DB": Create()
+"gorm/DB" -> item: insert
+"usecase.item" -> "outputport.ItemOutputPort": RenderSaveResult()
+"outputport.ItemOutputPort" -> "presenter/itemPresenter": RenderSaveResult()
+"presenter/itemPresenter" -> "echo/Context": JSON()
+"echo/Context" -> Alice
+
+@enduml

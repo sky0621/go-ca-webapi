@@ -1,0 +1,222 @@
+@startuml
+
+package "presenter" {
+	class "itemPresenter" as presenter.itemPresenter <<V,Orchid>> {
+		-c: invalid type
+		+RenderSaveResult(target: model.SaveItem): error
+		+RenderListResult(targets: model.ListItem): error
+		+RenderFailure(err: error): error
+	}
+}
+
+
+
+package "presenter" {
+	class "listItemResponse" as presenter.listItemResponse <<V,Orchid>> {
+		+ID: string
+		+Name: string
+		+Price: int
+	}
+}
+
+
+
+package "presenter" {
+	class "saveItemResponse" as presenter.saveItemResponse <<V,Orchid>> {
+		+ID: string
+	}
+}
+
+
+
+package "domain" {
+	interface "Item" as domain.Item {
+		+ListItem(): (model.Item, error)
+		+SaveItem(m: model.Item): error
+	}
+}
+
+
+	domain.Item ..> model.Item : <<use>> 
+
+package "domain" {
+	class "item" as domain.item <<E,#FFCC00>> {
+		-itemRepository: repository.Item
+		+SaveItem(m: model.Item): error
+		+ListItem(): (model.Item, error)
+	}
+}
+
+	domain.item --> repository.Item
+
+	domain.item ..> model.Item : <<use>> 
+
+package "main" {
+	class "App" as main.App <<V,Orchid>> {
+		-e: *invalid type
+		-itemUsecase: usecase.Item
+		-itemController: invalid type
+		+Start()
+	}
+}
+
+	main.App --> usecase.Item
+
+
+package "usecase" {
+	interface "Item" as usecase.Item {
+		+ListItem(o: outputport.ItemOutputPort): error
+		+SaveItem(r: *usecase.SaveItemRequest, o: outputport.ItemOutputPort): error
+	}
+}
+
+
+	usecase.Item ..> outputport.ItemOutputPort : <<use>> 
+	usecase.Item ..> usecase.SaveItemRequest : <<use>> 
+	usecase.Item ..> outputport.ItemOutputPort : <<use>> 
+
+package "usecase" {
+	class "SaveItemRequest" as usecase.SaveItemRequest <<V,Orchid>> {
+		+ID: string
+		+Name: string
+		+Price: int
+	}
+}
+
+
+
+package "usecase" {
+	class "item" as usecase.item <<E,#FFCC00>> {
+		-itemDomain: domain.Item
+		+SaveItem(r: *usecase.SaveItemRequest, o: outputport.ItemOutputPort): error
+		+ListItem(o: outputport.ItemOutputPort): error
+	}
+}
+
+	usecase.item --> domain.Item
+
+	usecase.item ..> usecase.SaveItemRequest : <<use>> 
+	usecase.item ..> outputport.ItemOutputPort : <<use>> 
+	usecase.item ..> outputport.ItemOutputPort : <<use>> 
+
+package "usecasemodel" {
+	class "ListItem" as usecasemodel.ListItem <<V,Orchid>> {
+		+ID: string
+		+Name: string
+		+Price: int
+	}
+}
+
+
+
+package "usecasemodel" {
+	class "SaveItem" as usecasemodel.SaveItem <<V,Orchid>> {
+		+ID: string
+	}
+}
+
+
+
+package "controller" {
+	interface "Item" as controller.Item {
+		+Handle()
+	}
+}
+
+
+
+package "controller" {
+	class "itemController" as controller.itemController <<E,#FFCC00>> {
+		-e: *invalid type
+		-input: usecase.Item
+		+Handle()
+		-saveItem(c: invalid type): error
+		-listItem(c: invalid type): error
+	}
+}
+
+	controller.itemController --> usecase.Item
+
+
+package "controller" {
+	class "saveItemRequest" as controller.saveItemRequest <<V,Orchid>> {
+		+Name: string
+		+Price: int
+	}
+}
+
+
+
+package "model" {
+	class "Item" as model.Item <<V,Orchid>> {
+		+ID: string
+		+Name: string
+		+Price: int
+	}
+}
+
+
+
+package "repository" {
+	interface "Item" as repository.Item {
+		+ListItem(): (model.Item, error)
+		+SaveItem(m: model.Item): error
+	}
+}
+
+
+	repository.Item ..> model.Item : <<use>> 
+
+package "driver" {
+	class "closeDBConnectionFunc" as driver.closeDBConnectionFunc <<V,Orchid>> {
+		-closeDBConnectionFunc()
+	}
+}
+
+
+
+package "outputport" {
+	interface "ItemOutputPort" as outputport.ItemOutputPort {
+		+RenderFailure(err: error): error
+		+RenderListResult(targets: model.ListItem): error
+		+RenderSaveResult(target: model.SaveItem): error
+	}
+}
+
+
+
+package "gateway" {
+	class "ItemRepository" as gateway.ItemRepository <<E,#FFCC00>> {
+		-dbConn: gorm.DB
+		+SaveItem(m: model.Item): error
+		+ListItem(): (model.Item, error)
+	}
+}
+
+
+	gateway.ItemRepository ..> model.Item : <<use>> 
+
+package "gateway" {
+	class "itemRecord" as gateway.itemRecord <<V,Orchid>> {
+		+ID: string
+		+Name: string
+		+Price: int
+		+TableName(): string
+		-convertToModel(): model.Item
+	}
+}
+
+
+
+	presenter.itemPresenter -up-|> outputport.ItemOutputPort
+	domain.Item -up-|> repository.Item
+	domain.item -up-|> domain.Item
+	domain.item -up-|> repository.Item
+	usecase.item -up-|> usecase.Item
+	controller.itemController -up-|> controller.Item
+	repository.Item -up-|> domain.Item
+	gateway.ItemRepository -up-|> domain.Item
+	gateway.ItemRepository -up-|> repository.Item
+
+
+@enduml
